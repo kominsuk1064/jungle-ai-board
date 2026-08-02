@@ -31,6 +31,7 @@ describe("withAiTelemetry", () => {
     );
 
     expect(response.headers.get("x-ai-trace-id")).toBe("trace-test-123");
+    expect(response.headers.get("x-ai-duration-ms")).toBe("42");
     expect(response.headers.get("server-timing")).toBe("ai;dur=42");
     expect(events).toEqual([
       {

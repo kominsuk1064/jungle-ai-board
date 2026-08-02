@@ -40,6 +40,11 @@ const TARGET_PATTERNS = [
   /(선수|감독|팬|팀|구단|심판).{0,24}(꺼져|죽어|은퇴|버러지|폐급|쓰레기|노답)/i,
   /(저 사람|쟤|걔|너).{0,24}(꺼져|죽어|버러지|폐급|쓰레기)/i,
 ];
+const VIOLENT_THREAT_PATTERNS = [
+  /(팬|관중|선수|감독|심판|사람|저 사람|너|쟤|걔).{0,40}(죽여(?:버리|야|라)|죽이(?:겠|러|려고|자)|살해|해치(?:겠|자)|폭행|패버리|때려죽)/i,
+  /(찾아가|쫓아가).{0,40}(죽여(?:버리|야|라)|죽이(?:겠|러|려고|자)|살해|해치(?:겠|자)|폭행|패버리|때려죽)/i,
+  /(죽여(?:버리|야|라)|죽이(?:겠|러|려고|자)|살해|해치(?:겠|자)|폭행|패버리|때려죽).{0,40}(팬|관중|선수|감독|심판|사람|너|쟤|걔)/i,
+];
 const PRIVACY_PATTERNS = [
   /\b010[-.\s]?\d{4}[-.\s]?\d{4}\b/,
   /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i,
@@ -78,7 +83,9 @@ function runAbuseTool(text: string): ToolCheckResult {
 }
 
 function runTargetedAttackTool(text: string): ToolCheckResult {
-  const hasTargetedAttack = TARGET_PATTERNS.some((pattern) => pattern.test(text));
+  const hasTargetedAttack = [...TARGET_PATTERNS, ...VIOLENT_THREAT_PATTERNS].some(
+    (pattern) => pattern.test(text),
+  );
 
   if (!hasTargetedAttack) {
     return {
@@ -92,7 +99,7 @@ function runTargetedAttackTool(text: string): ToolCheckResult {
 
   return {
     categories: ["targeted_attack", "heated_tone"],
-    reasons: ["특정 대상에 대한 인신공격 또는 퇴장 요구성 표현이 감지되었습니다."],
+    reasons: ["특정 대상에 대한 인신공격, 위협 또는 폭력 표현이 감지되었습니다."],
     suggestions: ["사람을 공격하는 문장 대신 플레이, 전술, 기록에 대한 의견으로 바꿔보세요."],
     score: 5,
     trace: "check_targeted_attack: hit",

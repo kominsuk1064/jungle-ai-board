@@ -8,6 +8,8 @@ describe("runRuleBasedModeration", () => {
     ["시발 오늘 수비는 너무 아쉽다.", "warn", "caution"],
     ["감독은 진짜 쓰레기니까 당장 꺼져.", "block", "unsafe"],
     ["연락처는 010-1234-5678 입니다.", "block", "unsafe"],
+    ["팬들의 응원이 오늘 정말 죽여줬다.", "allow", "safe"],
+    ["상대 팀 팬들을 찾아가 모두 죽여버리겠다.", "block", "unsafe"],
     [
       "자료는 https://a.test https://b.test https://c.test 에 있습니다.",
       "warn",
@@ -33,5 +35,17 @@ describe("runRuleBasedModeration", () => {
     expect(result.verdict).toBe("block");
     expect(result.categories).toContain("privacy");
     expect(result.reasons[0]).toContain("개인정보");
+  });
+
+  it("reports a violent threat as a targeted attack", () => {
+    const result = runRuleBasedModeration({
+      targetType: "post",
+      title: "원정 팬 위협",
+      content: "상대 팀 팬들을 찾아가 모두 죽여버리겠다.",
+    });
+
+    expect(result.verdict).toBe("block");
+    expect(result.categories).toContain("targeted_attack");
+    expect(result.reasons[0]).toContain("위협");
   });
 });

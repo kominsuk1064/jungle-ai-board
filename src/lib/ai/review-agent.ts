@@ -7,6 +7,12 @@ import {
 } from "@langchain/core/messages";
 
 import { getChatModel, getOpenAIApiKey } from "@/lib/ai/config";
+import {
+  formatReviewGameSummary,
+  getReviewStatusNotice,
+  getReviewTitle,
+  isFinalKboGameStatus,
+} from "@/lib/ai/review-grounding";
 import { createMcpBriefing } from "@/lib/ai/mcp-briefing";
 import type {
   KboGameRecordBriefingResult,
@@ -199,7 +205,7 @@ const reviewAgentTools = [
     function: {
       name: "fetch_kbo_game_record",
       description:
-        "Fetch official KBO score board and boxscore briefing for one selected game.",
+        "Fetch the final official KBO score board and boxscore for a completed or drawn game.",
       parameters: {
         type: "object",
         properties: {
@@ -586,6 +592,12 @@ async function fetchKboGameRecord(
     throw new Error("공식 기록을 조회할 KBO 경기를 찾지 못했습니다.");
   }
 
+  if (!isFinalKboGameStatus(game.status)) {
+    throw new Error(
+      "경기가 종료되지 않아 최종 스코어보드와 박스스코어를 리뷰 근거로 사용할 수 없습니다.",
+    );
+  }
+
   const toolResult = await invokeBaseballMcpTool("brief_kbo_game_record", {
     gameId: game.gameId,
     gameDate: game.gameDate,
@@ -653,6 +665,8 @@ function buildAgentSystemPrompt(): string {
     "가능하면 recommend_review_tags를 먼저 사용하고, 게시판 맥락이 필요하면 search_board_posts를 사용해라.",
     "경기 날짜가 있거나 메모에서 날짜를 알 수 있으면 fetch_kbo_games로 공식 경기 결과를 먼저 확인해라.",
     "fetch_kbo_games 결과에서 리뷰할 경기 하나를 고를 수 있으면 fetch_kbo_game_record로 공식 스코어보드와 박스스코어를 확인해라.",
+    "fetch_kbo_games의 status가 completed 또는 draw인 경기만 fetch_kbo_game_record를 호출해라.",
+    "live 또는 scheduled 경기에서는 현재 확인된 상황만 말하고 최종 점수, 승패, 종료 기록을 추정하지 마라.",
     "최신 외부 이슈가 필요할 때만 fetch_baseball_news_briefing을 사용해라.",
     "같은 도구와 같은 인자는 반복 호출하지 마라.",
     "도구 호출은 최대 4회까지만 가능하다.",
@@ -672,39 +686,48 @@ function buildAgentUserPrompt(
   ].join("\n\n");
 }
 
-function formatGameSummaryForDraft(
-  game: KboGamesResult["games"][number],
-): string {
-  const score =
-    game.awayScore === null || game.homeScore === null
-      ? "스코어 미정"
-      : `${game.awayTeam} ${game.awayScore} : ${game.homeScore} ${game.homeTeam}`;
-  const stadium = game.stadium ? `, ${game.stadium}` : "";
-
-  return `${game.gameDate} ${score}${stadium}`;
-}
-
 function buildFallbackResult(state: AgentState): ReviewAgentResult {
   const tags =
     state.memory.recommendedTags ?? extractReviewTags(state.memo, state.favoriteTeam);
-  const selectedGame = state.memory.kboGames?.games[0];
-  const officialRecordItems = state.memory.officialRecord?.recordItems.slice(0, 6) ?? [];
+  const selectedGame = selectKboGameForRecord(state, {});
+  const isFinalGame = selectedGame
+    ? isFinalKboGameStatus(selectedGame.status)
+    : false;
+  const officialRecordItems = isFinalGame
+    ? state.memory.officialRecord?.recordItems.slice(0, 6) ?? []
+    : [];
   const recordText =
     officialRecordItems.length > 0
       ? officialRecordItems.map((item) => `- ${item}`).join("\n")
       : "";
+  const statusNotice = selectedGame ? getReviewStatusNotice(selectedGame) : "";
+  const checklist =
+    selectedGame && !isFinalGame
+      ? [
+          "경기 종료 후 최종 점수와 승패를 다시 확인하기",
+          "직접 확인한 장면과 현재 기록만 남기기",
+          "종료 기록이 공개된 뒤 주요 선수 기록을 보강하기",
+        ]
+      : [
+          "결승타, 홈런, 실책 중 승부에 가장 컸던 장면 하나를 선택해 의견 추가하기",
+          "선발/불펜/타선 중 핵심 포인트를 한 문단으로 보강하기",
+          "다음 경기에서 확인하고 싶은 점 적기",
+        ];
 
   return {
     title: selectedGame
-      ? `${selectedGame.gameDate} ${selectedGame.awayTeam} vs ${selectedGame.homeTeam} 리뷰`
+      ? getReviewTitle(selectedGame)
       : tags.length > 1
         ? `${tags[1]} 경기 리뷰`
         : DEFAULT_TITLE,
     tags,
     draft: [
       selectedGame
-        ? `${formatGameSummaryForDraft(selectedGame)} 경기 리뷰입니다.`
+        ? isFinalGame
+          ? `${formatReviewGameSummary(selectedGame)} 경기 리뷰입니다.`
+          : `${formatReviewGameSummary(selectedGame)} 기준으로 정리한 초안입니다.`
         : "이번 경기는 메모에서 드러난 흐름처럼 초반 분위기와 후반 승부처가 뚜렷하게 갈린 경기였습니다.",
+      statusNotice,
       state.memo,
       recordText
         ? `공식 기록에서 확인한 포인트는 다음과 같습니다.\n${recordText}`
@@ -713,11 +736,7 @@ function buildFallbackResult(state: AgentState): ReviewAgentResult {
     ]
       .filter(Boolean)
       .join("\n\n"),
-    checklist: [
-      "결승타, 홈런, 실책 중 승부에 가장 컸던 장면 하나를 선택해 의견 추가하기",
-      "선발/불펜/타선 중 핵심 포인트를 한 문단으로 보강하기",
-      "다음 경기에서 확인하고 싶은 점 적기",
-    ],
+    checklist,
     steps: state.steps,
     sources: state.memory.sources,
   };
@@ -741,6 +760,12 @@ async function generateFinalResult(state: AgentState): Promise<ReviewAgentResult
   const apiKey = getOpenAIApiKey();
   const fallback = buildFallbackResult(state);
 
+  const selectedGame = selectKboGameForRecord(state, {});
+
+  if (selectedGame && !isFinalKboGameStatus(selectedGame.status)) {
+    return fallback;
+  }
+
   if (!apiKey) {
     return fallback;
   }
@@ -750,6 +775,8 @@ async function generateFinalResult(state: AgentState): Promise<ReviewAgentResult
     "아래 Agent state와 tool 결과만 근거로 작성해라.",
     "오늘 경기를 보지 않은 사람도 대략적인 흐름을 이해할 수 있게 작성해라.",
     "공식 기록이 있으면 점수, 득점 이닝, 결승타, 홈런, 실책, 주요 투수 기록을 자연스럽게 반영해라.",
+    "경기 상태가 completed 또는 draw일 때만 최종 점수와 승패를 단정해라.",
+    "live 또는 scheduled 상태라면 최종 결과나 이후 이닝의 기록을 만들지 마라.",
     "본문은 4~6문단으로 작성하고, 첫 문단에는 날짜/팀/점수/구장을 요약해라.",
     "이후 문단은 경기 흐름, 승부처, 타선 포인트, 마운드 포인트, 아쉬웠던 플레이 순서로 정리해라.",
     "확인되지 않은 선수 이름이나 기록은 지어내지 마라.",
@@ -878,6 +905,21 @@ async function enrichOfficialGameContext(state: AgentState): Promise<void> {
   }
 
   if (!state.memory.kboGames?.games.length || state.memory.officialRecord) {
+    return;
+  }
+
+  const selectedGame = selectKboGameForRecord(state, {});
+
+  if (selectedGame && !isFinalKboGameStatus(selectedGame.status)) {
+    state.steps.push({
+      iteration: MAX_AGENT_ITERATIONS,
+      toolName: "fetch_kbo_game_record",
+      status: "skipped",
+      summary:
+        selectedGame.status === "live"
+          ? "진행 중 경기라 최종 박스스코어 조회를 건너뛰었습니다."
+          : "경기 전이라 최종 박스스코어 조회를 건너뛰었습니다.",
+    });
     return;
   }
 

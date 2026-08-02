@@ -51,8 +51,10 @@ KBO Talk의 AI API가 배포 환경에서 실제로 동작하는지 확인하기
 모든 AI API 응답에 다음 헤더를 추가합니다.
 
 - `x-ai-trace-id`: 사용자가 전달한 장애 시점과 서버 로그를 연결하는 식별자
+- `x-ai-duration-ms`: CDN이나 프록시가 표준 타이밍 헤더를 노출하지 않을 때도 확인 가능한 전체 처리 시간
 - `server-timing`: 브라우저 개발자 도구에서 확인할 수 있는 전체 AI API 처리 시간
 
+`x-ai-duration-ms`와 `server-timing`의 `ai;dur` 값은 같은 측정값을 사용합니다.
 기존 `Server-Timing` 값이 있으면 덮어쓰지 않고 `ai;dur=<milliseconds>`를 뒤에 추가합니다.
 
 ## 개인정보 보호

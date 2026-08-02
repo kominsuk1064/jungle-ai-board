@@ -88,6 +88,7 @@ function attachTelemetryHeaders(
   const currentServerTiming = response.headers.get("server-timing");
 
   response.headers.set("x-ai-trace-id", traceId);
+  response.headers.set("x-ai-duration-ms", String(durationMs));
   response.headers.set(
     "server-timing",
     currentServerTiming ? `${currentServerTiming}, ${metric}` : metric,

@@ -23,6 +23,7 @@ describe("AI route telemetry integration", () => {
     expect(response.headers.get("x-ai-trace-id")).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
     );
+    expect(response.headers.get("x-ai-duration-ms")).toMatch(/^\d+$/);
     expect(response.headers.get("server-timing")).toMatch(/^ai;dur=\d+$/);
     expect(event).toMatchObject({
       schemaVersion: 1,

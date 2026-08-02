@@ -47,8 +47,8 @@
 | 주제 | 구현 결과 |
 | --- | --- |
 | 실제 사용 흐름 속 AI | 기술 데모를 별도 화면에 두지 않고 글쓰기·검색·경기방·운영 흐름에 AI 기능을 배치 |
-| 품질 회귀 방지 | 중복 위험과 모더레이션 정책을 검증하는 18개 fixture 및 오프라인 eval 구축 |
-| 자동 검증 | Vitest 5개 파일·25개 테스트와 audit → lint → typecheck → test → eval → build CI 구성 |
+| 품질 회귀 방지 | 중복 위험과 모더레이션 정책을 검증하는 19개 fixture 및 오프라인 eval 구축 |
+| 자동 검증 | Vitest 6개 파일·31개 테스트와 audit → lint → typecheck → test → eval → build CI 구성 |
 | 런타임 관측성 | 10개 AI API에 trace ID, 처리 시간, 결과 상태를 기록하는 공용 텔레메트리 적용 |
 | 개인정보 보호 | 프롬프트·게시글·URL·사용자 식별자를 구조화 로그에서 제외 |
 | 제품 완성도 | 반응형 웹, 모바일 앱형 화면, Android APK, 배포 및 데모 데이터까지 end-to-end 구현 |
@@ -113,7 +113,7 @@ flowchart LR
 → 공용 인증·텔레메트리 계층
 → PostgreSQL / RAG / Agent / JSON-RPC Tool
 → OpenAI·KBO·뉴스 데이터 호출
-→ trace ID와 Server-Timing을 포함한 응답
+→ trace ID와 Server-Timing, 처리시간 보조 헤더를 포함한 응답
 ~~~
 
 ## AI 설계
@@ -181,7 +181,7 @@ src/lib/ai/game-prediction.ts
 | 평가 대상 | Fixture | 기준 |
 | --- | ---: | --- |
 | 중복 위험 정책 | 8개 | 위험 등급 exact match, 차단 여부 Precision·Recall·F1 |
-| 모더레이션 정책 | 10개 | <code>allow</code>·<code>warn</code>·<code>block</code> exact match, 차단 여부 Precision·Recall·F1 |
+| 모더레이션 정책 | 11개 | <code>allow</code>·<code>warn</code>·<code>block</code> exact match, 차단 여부 Precision·Recall·F1 |
 
 현재 fixture 기준 exact-match accuracy와 blocking F1은 모두 <code>1.0</code>입니다. 이 값은 일반적인 모델 성능 점수가 아니라, 버전 관리되는 정책 회귀 기준선입니다.
 
@@ -194,6 +194,7 @@ src/lib/ai/game-prediction.ts
 - 한 줄 JSON으로 기능명, HTTP 상태, 결과, 처리 시간을 기록
 - 응답의 <code>x-ai-trace-id</code>로 장애 제보와 서버 로그를 연결
 - <code>Server-Timing</code>으로 브라우저에서 AI API 지연 시간을 확인
+- 프록시가 표준 헤더를 제거해도 <code>x-ai-duration-ms</code>로 같은 처리 시간을 확인
 - 질문·프롬프트·게시글·URL·사용자 식별자는 기록하지 않음
 - Agent, RAG, 도구 호출, 경기 전망을 같은 이벤트 스키마로 비교
 
@@ -217,8 +218,8 @@ npm audit
 | 검사 | 현재 기준 |
 | --- | --- |
 | Dependency audit | <code>npm audit --audit-level=high</code>, 0 vulnerabilities |
-| Unit·route integration tests | 5개 파일, 25개 테스트 통과 |
-| Offline AI eval | 18개 fixture 통과 |
+| Unit·route integration tests | 6개 파일, 31개 테스트 통과 |
+| Offline AI eval | 19개 fixture 통과 |
 | Lint·typecheck·build | 모두 통과 |
 | Runtime telemetry coverage | AI API 10개 적용 |
 
