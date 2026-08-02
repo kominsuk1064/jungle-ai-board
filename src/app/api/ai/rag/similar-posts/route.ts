@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { DEFAULT_RAG_LIMIT, MAX_RAG_LIMIT } from "@/lib/ai/config";
 import { findSimilarPostsForPost } from "@/lib/ai/rag";
+import { withAiTelemetry } from "@/lib/ai/telemetry";
 
 export const runtime = "nodejs";
 
@@ -15,7 +16,7 @@ function parseLimit(value: string | null): number {
   return Math.min(limit, MAX_RAG_LIMIT);
 }
 
-export async function GET(request: Request) {
+async function handleGet(request: Request) {
   const { searchParams } = new URL(request.url);
   const postId = searchParams.get("postId")?.trim();
 
@@ -51,4 +52,10 @@ export async function GET(request: Request) {
     similarPosts: result.similarPosts,
     summary: result.summary,
   });
+}
+
+export function GET(request: Request): Promise<Response> {
+  return withAiTelemetry(request, "rag.similar-posts", () =>
+    handleGet(request),
+  );
 }

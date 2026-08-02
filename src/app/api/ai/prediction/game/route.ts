@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createGamePrediction } from "@/lib/ai/game-prediction";
+import { withAiTelemetry } from "@/lib/ai/telemetry";
 import type { KboGame } from "@/lib/kbo/game";
 
 export const runtime = "nodejs";
@@ -19,7 +20,7 @@ function isKboGame(value: unknown): value is KboGame {
   );
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   let body: unknown;
 
   try {
@@ -59,4 +60,12 @@ export async function POST(request: Request) {
       { status: 502 },
     );
   }
+}
+
+export function POST(request: Request): Promise<Response> {
+  return withAiTelemetry(
+    request,
+    "prediction.game",
+    () => handlePost(request),
+  );
 }

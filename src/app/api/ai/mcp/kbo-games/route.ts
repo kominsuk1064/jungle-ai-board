@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { withAiTelemetry } from "@/lib/ai/telemetry";
 import type {
   KboGamesResult,
   McpToolResult,
@@ -40,7 +41,7 @@ async function createKboGamesResponse(input: {
   });
 }
 
-export async function GET(request: Request) {
+async function handleGet(request: Request) {
   const { searchParams } = new URL(request.url);
 
   try {
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   let body: unknown;
 
   try {
@@ -88,4 +89,14 @@ export async function POST(request: Request) {
       { status: 502 },
     );
   }
+}
+
+export function GET(request: Request): Promise<Response> {
+  return withAiTelemetry(request, "mcp.kbo-games", () => handleGet(request));
+}
+
+export function POST(request: Request): Promise<Response> {
+  return withAiTelemetry(request, "mcp.kbo-games", () =>
+    handlePost(request),
+  );
 }

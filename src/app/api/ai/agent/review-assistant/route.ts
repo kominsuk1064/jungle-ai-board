@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { runReviewAgent } from "@/lib/ai/review-agent";
+import { withAiTelemetry } from "@/lib/ai/telemetry";
 
 export const runtime = "nodejs";
 
@@ -8,7 +9,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   let body: unknown;
 
   try {
@@ -54,4 +55,12 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+}
+
+export function POST(request: Request): Promise<Response> {
+  return withAiTelemetry(
+    request,
+    "agent.review-assistant",
+    () => handlePost(request),
+  );
 }

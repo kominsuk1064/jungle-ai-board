@@ -1,0 +1,8 @@
+{"id":"no-result","similarities":[],"expectedRisk":"none"}
+{"id":"below-low","similarities":[0.67],"expectedRisk":"none"}
+{"id":"low-boundary","similarities":[0.68],"expectedRisk":"low"}
+{"id":"low-upper","similarities":[0.779],"expectedRisk":"low"}
+{"id":"medium-boundary","similarities":[0.78],"expectedRisk":"medium"}
+{"id":"medium-upper","similarities":[0.859],"expectedRisk":"medium"}
+{"id":"high-boundary","similarities":[0.86],"expectedRisk":"high"}
+{"id":"high-confidence","similarities":[0.95],"expectedRisk":"high"}
