@@ -1,393 +1,270 @@
-# KBO Talk
+<div align="center">
+  <h1>KBO Talk</h1>
+  <p><strong>KBO 경기 데이터와 팬 커뮤니티에 RAG·AI Agent를 연결한 풀스택 AI 애플리케이션</strong></p>
+  <p>
+    경기 전 정보 탐색부터 경기 중 중계, 경기 후 기록 확인과 팬 커뮤니티 참여까지<br />
+    하나의 흐름으로 연결하고, 필요한 순간에 AI가 자연스럽게 개입하도록 설계했습니다.
+  </p>
+  <p>
+    <a href="https://jungle-ai-board.vercel.app"><strong>Web Demo</strong></a>
+    ·
+    <a href="https://jungle-ai-board.vercel.app/mobile-app"><strong>Mobile App</strong></a>
+    ·
+    <a href="https://jungle-ai-board.vercel.app/portfolio/kbo-app"><strong>Case Study</strong></a>
+    ·
+    <a href="https://github.com/kominsuk1064/jungle-ai-board/releases/tag/v0.1.0"><strong>Android APK</strong></a>
+  </p>
+</div>
 
-KBO Talk는 KBO 경기 리뷰, 팀 이슈, 선수 기록, 야구 뉴스 이야기를 한곳에서 나눌 수 있는 야구 커뮤니티 게시판입니다.
+<p align="center">
+  <a href="https://github.com/kominsuk1064/jungle-ai-board/actions/workflows/ci.yml">
+    <img alt="Quality CI" src="https://github.com/kominsuk1064/jungle-ai-board/actions/workflows/ci.yml/badge.svg?branch=kominsuk" />
+  </a>
+  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white" />
+  <img alt="TypeScript 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" />
+  <img alt="PostgreSQL and pgvector" src="https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?style=flat-square&logo=postgresql&logoColor=white" />
+  <img alt="OpenAI API" src="https://img.shields.io/badge/OpenAI-API-412991?style=flat-square&logo=openai&logoColor=white" />
+  <img alt="Vitest 25 tests" src="https://img.shields.io/badge/Vitest-25_tests-6E9F18?style=flat-square&logo=vitest&logoColor=white" />
+</p>
 
-단순 게시판 기능 위에 RAG, MCP, AI Agent를 붙여서 사용자가 글을 작성하거나 경기 정보를 확인할 때 필요한 도움을 자연스럽게 받을 수 있도록 구성했습니다. 화면에서는 AI 용어를 크게 드러내기보다 `유사 글`, `뉴스 브리핑`, `리뷰 초안`, `야구 도우미`처럼 실제 사용 흐름에 가까운 기능으로 보여주는 것을 목표로 했습니다.
+![KBO Talk 메인 페이지](docs/screenshots/baseball-ai-board-demo.png)
 
-## 1. 프로젝트 개요
+<p align="center"><sub>오늘의 경기, 팀·태그 필터, 게시판, 인기글, 야구 도우미를 한 화면에 구성한 데스크톱 메인</sub></p>
 
-이 프로젝트는 개인이 프론트엔드, 백엔드, 데이터베이스, AI 응용 기능을 모두 직접 설계하고 구현하는 것을 목표로 만든 KBO 야구 게시판입니다.
+## 프로젝트 한눈에 보기
 
-사용자는 회원가입과 로그인 후 게시글과 댓글을 작성할 수 있고, 태그, 검색, 페이지네이션, 추천/비추천, 조회수 기반 인기글을 통해 일반 커뮤니티처럼 게시판을 사용할 수 있습니다. 여기에 KBO 일정/결과, 순위, 기록실, 뉴스, 경기방을 연결해 야구 커뮤니티에 가까운 사용 경험을 만들었습니다.
-
-AI 기능은 다음 세 가지 축으로 구성했습니다.
-
-- RAG: 기존 게시글을 벡터 검색해 유사 글 추천, 중복 글 방지, 경기/팀별 관련 글 요약 제공
-- MCP: 외부 KBO 경기 데이터, 공식 기록, 뉴스 URL을 JSON-RPC 도구처럼 호출해 브리핑 제공
-- AI Agent: 경기 리뷰 초안 생성, 게시글/댓글 모더레이션, 야구 게시판 도우미, 경기 승부 예측 제공
-
-## 2. 기술 스택
-
-| 영역 | 기술 |
+| 구분 | 내용 |
 | --- | --- |
-| Frontend | React, Next.js App Router |
-| Backend | Next.js API Routes |
-| Language | TypeScript |
-| Styling | Tailwind CSS |
-| Database | PostgreSQL |
-| ORM | Prisma |
-| Vector DB | PostgreSQL + pgvector |
-| RAG Framework | LangChain.js |
-| LLM / Embedding | OpenAI API |
-| MCP | Node.js 기반 JSON-RPC 구조 |
-| Agent | Function Calling 기반 직접 구현 |
-| Auth | JWT + HttpOnly Cookie |
-| Quality | Vitest, JSONL eval dataset, structured JSON telemetry, GitHub Actions |
+| 형태 | 기획부터 배포까지 직접 진행한 개인 풀스택 프로젝트 |
+| 문제 | 경기 일정·기록·뉴스·팬 반응이 여러 화면에 흩어져 사용 흐름이 자주 끊기는 문제 |
+| 해결 | 경기방을 중심으로 경기 전·중·후 정보와 커뮤니티 참여를 하나의 흐름으로 연결 |
+| AI 활용 | 유사 글 검색, 중복 글 방지, 관련 글 요약, 리뷰 초안, 모더레이션, 게시판 도우미 |
+| 운영 기반 | 오프라인 eval, 단위·라우트 통합 테스트, 구조화 텔레메트리, GitHub Actions CI |
+| 배포 | Vercel, Supabase PostgreSQL + pgvector, Android WebView APK |
 
-### 선택 이유
+## 핵심 성과
 
-- Next.js는 React 화면과 API 서버를 한 프로젝트에서 관리할 수 있어 개인 프로젝트 규모에 적합하다고 판단했습니다.
-- PostgreSQL은 게시판 데이터 저장뿐 아니라 pgvector를 이용한 벡터 검색까지 한 DB에서 처리할 수 있어 RAG 구현에 유리했습니다.
-- Prisma는 DB 모델, 마이그레이션, TypeScript 타입을 안정적으로 연결하기 위해 사용했습니다.
-- LangChain.js는 OpenAI Embedding과 Chat 모델을 연결해 RAG 흐름을 구조화하기 좋았습니다.
-- MCP는 외부 야구 데이터와 URL 분석 기능을 LLM이 호출 가능한 도구 형태로 분리하기 위해 JSON-RPC 구조로 구현했습니다.
+| 주제 | 구현 결과 |
+| --- | --- |
+| 실제 사용 흐름 속 AI | 기술 데모를 별도 화면에 두지 않고 글쓰기·검색·경기방·운영 흐름에 AI 기능을 배치 |
+| 품질 회귀 방지 | 중복 위험과 모더레이션 정책을 검증하는 18개 fixture 및 오프라인 eval 구축 |
+| 자동 검증 | Vitest 5개 파일·25개 테스트와 audit → lint → typecheck → test → eval → build CI 구성 |
+| 런타임 관측성 | 10개 AI API에 trace ID, 처리 시간, 결과 상태를 기록하는 공용 텔레메트리 적용 |
+| 개인정보 보호 | 프롬프트·게시글·URL·사용자 식별자를 구조화 로그에서 제외 |
+| 제품 완성도 | 반응형 웹, 모바일 앱형 화면, Android APK, 배포 및 데모 데이터까지 end-to-end 구현 |
 
-## 3. 주요 구현 기능
+## 해결하고 싶었던 문제
 
-### 기본 게시판
+### 1. 흩어진 야구 정보를 경기 하나로 묶기
 
-- 회원가입, 로그인, 로그아웃
-- JWT + HttpOnly Cookie 기반 인증
-- 게시글 작성, 조회, 수정, 삭제
-- 댓글 작성, 조회, 수정, 삭제
-- 태그 생성 및 다중 태그 필터
-- 검색과 페이지네이션
-- 게시글 조회수
-- 추천/비추천
-- 조회수 기반 인기글
-- 게시글 목록 밀도 조절
-- 글쓰기 페이지의 기존 태그 선택
-- 태그 0개 항목 숨김 처리
+야구 팬은 경기 전에는 선발투수와 라인업을 보고, 경기 중에는 문자중계를 확인하고, 경기 후에는 박스스코어·뉴스·팬 반응을 찾아봅니다. KBO Talk는 이 정보를 <strong>경기방</strong>에 모아 화면을 계속 오가야 하는 불편을 줄였습니다.
 
-### 야구 커뮤니티 기능
+### 2. 정보 확인을 커뮤니티 참여로 연결하기
 
-- 메인 화면 KBO 오늘의 경기 스코어보드
-- 경기방: 경기별 상세 화면
-- 경기방 선발 투수, 승리 투수, 패전 투수, 세이브 투수 표시
-- 경기방 박스스코어, 타자 기록, 투수 기록 표시
-- 경기방 라인업 조회
-- 경기방 1회부터 9회까지 문자중계 조회
-- 경기방 관련 게시글 요약
-- 순위/기록실 페이지에서 KBO 팀 순위와 선수 기록 표시
-- KBO 뉴스 페이지
-- 뉴스 URL 브리핑 연결
-- 조회수 기반 인기글
-- 데모용 경기 리뷰 게시글 데이터
+경기와 기록을 확인한 뒤 흐름이 끝나지 않도록 관련 게시글, 리뷰 작성, 댓글 참여를 이어 붙였습니다. 뉴스 URL 브리핑과 경기 리뷰 초안도 게시글 작성으로 자연스럽게 연결됩니다.
 
-### AI 활용 기능
+### 3. AI 기능을 만들고 끝내지 않기
 
-- RAG 기반 유사 게시글 추천
-- RAG 기반 글쓰기 중복 글 방지 알림
-- RAG 기반 경기/팀별 관련 글 묶음 요약
-- MCP 기반 KBO 경기 일정/결과 조회
-- MCP 기반 KBO 공식 기록 브리핑
-- MCP 기반 뉴스/외부 URL 브리핑
-- Agent 기반 경기 리뷰 초안 작성 도우미
-- Agent 기반 자율 운영 모더레이터
-- Agent 기반 야구 게시판 도우미 챗봇
-- Agent 기반 경기 승부 예측
-- 중복 위험·모더레이션 정책 오프라인 eval과 CI 회귀 차단
-- 전체 AI API의 trace ID·지연 시간·결과 상태 구조화 로깅
+AI 기능은 결과가 매번 달라질 수 있고, 배포 후에는 오류 원인을 찾기 어렵습니다. 결정론적 정책은 오프라인 eval로 회귀를 막고, 모든 AI API에는 같은 텔레메트리 스키마를 적용해 오류율과 지연 시간을 비교할 수 있게 했습니다.
 
-## 4. 전체 아키텍처
+## 주요 기능
 
-```mermaid
+| 영역 | 기능 |
+| --- | --- |
+| 커뮤니티 | 회원가입·로그인, 게시글·댓글 CRUD, 태그, 검색, 페이지네이션, 추천·비추천, 인기글 |
+| 경기방 | 일정·결과, 선발투수, 라인업, 문자중계, 박스스코어, 타자·투수 기록, 관련 글 |
+| 기록·뉴스 | KBO 팀 순위, 선수 기록실, 야구 뉴스, 외부 URL 브리핑 |
+| RAG | 유사 게시글 추천, 작성 중 중복 위험 안내, 경기·팀 관련 글 묶음 요약 |
+| Agent | 경기 리뷰 초안, 게시글·댓글 모더레이션, 야구 게시판 도우미, 경기 전망 |
+| 모바일 | 홈·경기·기록·뉴스·MY 탭, PWA 스타일 화면, Android WebView APK |
+
+## 아키텍처
+
+~~~mermaid
 flowchart LR
     User["사용자"] --> UI["Next.js / React UI"]
     UI --> API["Next.js API Routes"]
+
     API --> Auth["JWT + HttpOnly Cookie"]
     API --> DB["PostgreSQL"]
     DB --> Vector["pgvector / PostEmbedding"]
-    API --> OpenAI["OpenAI API"]
-    API --> MCP["MCP JSON-RPC Tools"]
-    MCP --> KBO["KBO 공식 경기/기록 데이터"]
-    MCP --> News["뉴스 RSS / 외부 URL"]
-    API --> Naver["네이버 스포츠 문자중계/기록 데이터"]
-    API --> Telemetry["AI Runtime Telemetry"]
-    Telemetry --> Logs["Structured Logs"]
-    API --> Agent["Agent Logic"]
-    Agent --> DB
+
+    API --> AI["AI Application Layer"]
+    AI --> RAG["RAG"]
+    AI --> Agent["Agent"]
+    AI --> Tools["JSON-RPC Tool Layer"]
+
+    RAG --> Vector
+    RAG --> OpenAI["OpenAI API"]
     Agent --> OpenAI
-    Agent --> MCP
-```
+    Agent --> Tools
+    Tools --> KBO["KBO 경기·기록 데이터"]
+    Tools --> News["Google News RSS / 외부 URL"]
 
-### 데이터 흐름
+    API --> Telemetry["AI Telemetry"]
+    Telemetry --> Logs["Structured Logs"]
+~~~
 
-```text
+### 요청 흐름
+
+~~~text
 사용자 요청
--> React 화면
--> Next.js API Route
--> Prisma
--> PostgreSQL
--> 필요한 경우 OpenAI / MCP Tool / KBO / 네이버 스포츠 데이터 호출
--> 결과를 화면에 표시
-```
+→ Next.js API Route
+→ 공용 인증·텔레메트리 계층
+→ PostgreSQL / RAG / Agent / JSON-RPC Tool
+→ OpenAI·KBO·뉴스 데이터 호출
+→ trace ID와 Server-Timing을 포함한 응답
+~~~
 
-## 5. 데이터베이스 구조
+## AI 설계
 
-| 모델 | 역할 |
-| --- | --- |
-| User | 사용자 계정, 이메일, 비밀번호 해시, 닉네임 |
-| Post | 게시글 제목, 본문, 작성자, 조회수 |
-| Comment | 게시글 댓글 |
-| Tag | 태그 이름 |
-| PostTag | 게시글과 태그의 다대다 관계 |
-| PostVote | 게시글 추천/비추천 |
-| PostEmbedding | 게시글 임베딩 벡터와 content hash |
+### RAG: 게시판 데이터를 검색 가능한 지식으로
 
-RAG 검색을 위해 `PostEmbedding.embedding`은 PostgreSQL pgvector의 `vector(1536)` 타입을 사용합니다.
+게시글의 제목·본문·태그를 임베딩해 PostgreSQL pgvector에 저장하고, 코사인 유사도 검색 결과를 LLM context로 전달합니다.
 
-## 6. RAG 기능
+- 게시글 상세에서 유사 글과 유사도를 제공
+- 작성 중인 글과 기존 글의 중복 위험을 <code>none</code>·<code>low</code>·<code>medium</code>·<code>high</code>로 분류
+- 경기 또는 팀과 관련된 게시글을 모아 공통 의견과 쟁점을 요약
+- 게시글 변경 시 content hash를 사용해 불필요한 임베딩 재생성 방지
 
-RAG는 게시판 내부 게시글을 검색 가능한 지식 소스로 만들고, LLM이 그 검색 결과를 바탕으로 답변하거나 요약할 수 있게 하는 구조입니다.
+주요 코드:
 
-### 구현 기능
-
-1. 유사 게시글 추천
-   - 게시글 상세 화면에서 사용자가 원할 때 기존 게시글 중 유사한 글을 확인할 수 있습니다.
-   - 유사도와 함께 제목, 요약, 태그를 보여줍니다.
-
-2. 글쓰기 중복 글 방지 알림
-   - 글쓰기 페이지에서 제목, 본문, 태그를 기준으로 기존 게시글과 유사도를 확인합니다.
-   - 이미 비슷한 글이 있으면 작성 전에 참고할 수 있도록 보여줍니다.
-
-3. 경기/팀별 관련 글 묶음 요약
-   - 경기방에서 해당 경기나 팀과 관련된 게시글을 모아 커뮤니티 반응을 요약합니다.
-   - 게시글 본문과 태그를 근거로 공통 의견과 쟁점을 정리합니다.
-
-### RAG 처리 흐름
-
-```text
-게시글 작성/수정
--> 제목 + 본문 + 태그를 지식 텍스트로 구성
--> OpenAI Embedding 생성
--> PostgreSQL pgvector 저장
--> 유사도 검색
--> 검색 결과를 LLM context로 전달
--> 유사 글 요약 또는 관련 글 요약 생성
-```
-
-### 주요 파일
-
-```text
+~~~text
 src/lib/ai/rag.ts
-src/app/api/ai/rag/similar-posts/route.ts
-src/app/api/ai/rag/draft-similar-posts/route.ts
-src/app/api/ai/rag/related-post-summary/route.ts
-src/components/ai/similar-posts-panel.tsx
-src/components/ai/related-post-summary-panel.tsx
-```
+src/lib/ai/duplicate-risk.ts
+src/app/api/ai/rag/**
+~~~
 
-## 7. MCP 기능
+### JSON-RPC 도구 계층: 외부 데이터를 일관된 인터페이스로
 
-MCP는 외부 시스템을 LLM이 사용할 수 있는 도구 형태로 연결하기 위해 구현했습니다. 이 프로젝트에서는 JSON-RPC 기반 MCP 서버와 도구 호출 구조를 직접 만들었습니다.
-
-### 구현 도구
+MCP의 도구 호출 패턴을 참고해 JSON-RPC 2.0 기반 <code>tools/list</code>·<code>tools/call</code> 인터페이스를 구현했습니다. 외부 데이터를 라우트에 직접 결합하지 않고, Agent와 API가 같은 도구 계층을 재사용하도록 구성했습니다.
 
 | Tool | 역할 |
 | --- | --- |
-| `get_kbo_games` | KBO 공식 경기 일정/결과 조회 |
-| `brief_kbo_game_record` | KBO 공식 스코어보드/박스스코어 기반 기록 브리핑 |
-| `search_baseball_news` | 야구 뉴스 검색 |
-| `brief_external_url` | 외부 URL 제목, 설명, 본문 일부 추출 |
+| <code>get_kbo_games</code> | KBO 공식 경기 일정·결과 조회 |
+| <code>brief_kbo_game_record</code> | 공식 스코어보드·박스스코어 기반 기록 브리핑 |
+| <code>search_baseball_news</code> | 야구 뉴스 검색 |
+| <code>brief_external_url</code> | 외부 URL 제목·설명·본문 일부 추출 |
 
-### JSON-RPC 요청 예시
+외부 URL은 localhost, 사설 IP, local domain 접근을 차단해 SSRF 위험을 줄였습니다. <code>MCP_SHARED_SECRET</code>을 설정하면 직접 호출 시 공유 비밀도 검증합니다.
 
-```json
-{
-  "jsonrpc": "2.0",
-  "method": "tools/call",
-  "params": {
-    "name": "get_kbo_games",
-    "arguments": {
-      "date": "2026-06-16"
-    }
-  },
-  "id": 1
-}
-```
+주요 코드:
 
-### 실제 외부 서비스 연동
-
-- KBO 공식 경기 일정/결과 페이지
-- KBO 공식 스코어보드/박스스코어 데이터
-- Google News RSS
-- 외부 뉴스 URL
-
-네이버 스포츠 문자중계, 라인업, 선수 기록실은 별도 API Route로 연결해 경기방과 기록실에서 사용합니다.
-
-### 보안 및 권한 관리
-
-- OpenAI API Key와 DB 접속 정보는 `.env`에서만 관리하고 GitHub에 올리지 않습니다.
-- `MCP_SHARED_SECRET`을 설정하면 MCP 직접 호출 시 `x-mcp-secret` 헤더로 검증합니다.
-- 외부 URL 브리핑은 localhost, 사설 IP, local domain 접근을 막아 SSRF 위험을 줄였습니다.
-
-### 주요 파일
-
-```text
+~~~text
 src/lib/mcp/json-rpc.ts
 src/lib/mcp/baseball-briefing-tools.ts
 src/app/api/mcp/baseball-briefing/route.ts
-src/app/api/ai/mcp/briefing/route.ts
-src/app/api/ai/mcp/kbo-games/route.ts
-src/app/api/ai/mcp/kbo-game-record/route.ts
-```
+~~~
 
-## 8. AI Agent 기능
+### Agent: 도구 선택과 실행 결과를 반영하는 작업 흐름
 
-Agent는 단순히 LLM을 한 번 호출하는 기능이 아니라, 목적에 맞게 도구를 선택하고 실행 결과를 반영하는 흐름으로 구현했습니다.
+Agent는 목적에 맞는 도구를 선택하고 실행 결과를 다음 판단에 반영합니다.
 
-### 경기 리뷰 작성 도우미
+- 경기 메모와 실제 기록을 결합한 리뷰 초안 생성
+- 규칙 기반 판정을 우선하고 LLM을 보조로 사용하는 모더레이션
+- 게시글·순위·기록·경기·뉴스를 탐색하는 야구 도우미
+- 최대 반복 횟수 제한, 같은 도구의 반복 호출 방지, 도구 실패 fallback
 
-사용자가 경기 메모, 응원 팀, 날짜를 입력하면 리뷰 초안을 생성합니다.
+주요 코드:
 
-활용 정보:
-
-- 사용자의 경기 메모
-- KBO 경기 일정/결과
-- KBO 공식 기록 브리핑
-- 기존 게시글 검색 결과
-- 뉴스 브리핑
-
-### 자율 운영 모더레이터
-
-게시글과 댓글 작성/수정 시 내용을 검사합니다.
-
-판정 결과:
-
-- `allow`: 정상 작성 허용
-- `warn`: 경고 후 작성 가능
-- `block`: 인신공격, 개인정보, 심한 욕설, 스팸 등을 차단
-
-검사 항목:
-
-- 욕설과 공격적 표현
-- 특정 대상 인신공격
-- 스팸성 링크와 반복 문자
-- 전화번호, 이메일 등 개인정보
-
-### 야구 게시판 도우미
-
-메인 오른쪽 사이드바에서 사용할 수 있는 챗봇형 도우미입니다. 게시글, 인기글, 순위표, 기록실, 경기방, 뉴스 정보를 참고해 질문에 답합니다.
-
-예시 질문:
-
-- 오늘 경기 결과 알려줘
-- KIA 관련 글 요약해줘
-- 구창모 선수 기록 알려줘
-- 타율 1등은 누구야?
-
-### 경기 승부 예측
-
-경기방에서 아직 종료되지 않은 경기의 관전 포인트와 예측을 제공합니다.
-
-반영 정보:
-
-- 경기 정보
-- 선발 투수
-- 팀 순위
-- 라인업 공개 시 타자 라인업
-- 최근 확인 가능한 경기 데이터
-
-종료된 경기에는 승부 예측 버튼을 숨깁니다.
-
-### Agent 안정성 전략
-
-- Function Calling 기반 도구 선택
-- 상태와 실행 결과를 memory로 관리
-- 최대 반복 횟수 제한
-- 같은 도구 반복 호출 방지
-- 도구 실패 시 fallback 응답 제공
-- 모더레이션은 규칙 기반 판정을 우선하고 LLM은 보조 판단으로 사용
-
-### AI 런타임 관측성
-
-모든 `/api/ai/*` 라우트는 공용 텔레메트리 래퍼를 사용합니다.
-
-- 기능명, HTTP 결과, 처리 시간을 한 줄 JSON 이벤트로 기록
-- 응답의 `x-ai-trace-id`로 사용자 장애 제보와 서버 로그 연결
-- `Server-Timing` 헤더로 브라우저에서 AI API 지연 시간 확인
-- 질문·프롬프트·게시글·URL·사용자 식별자는 로그에서 제외
-- Agent, RAG, MCP, 경기 예측을 같은 스키마로 비교 가능
-
-이벤트 스키마와 운영 지표는 [`docs/ai-observability.md`](docs/ai-observability.md)에 정리했습니다.
-
-### 주요 파일
-
-```text
+~~~text
 src/lib/ai/review-agent.ts
 src/lib/ai/moderation-agent.ts
-src/lib/ai/moderation-rules.ts
 src/lib/ai/board-assistant-agent.ts
 src/lib/ai/game-prediction.ts
-src/lib/ai/telemetry.ts
-src/app/api/ai/agent/review-assistant/route.ts
-src/app/api/ai/agent/moderation/route.ts
-src/app/api/ai/agent/board-assistant/route.ts
-src/app/api/ai/prediction/game/route.ts
-```
+~~~
 
-## 9. 주요 화면
+### Evals: 배포 전 품질 회귀 차단
 
-| 경로 | 설명 |
+외부 API와 데이터베이스가 없어도 반복 실행할 수 있는 결정론적 평가 기준을 만들었습니다.
+
+| 평가 대상 | Fixture | 기준 |
+| --- | ---: | --- |
+| 중복 위험 정책 | 8개 | 위험 등급 exact match, 차단 여부 Precision·Recall·F1 |
+| 모더레이션 정책 | 10개 | <code>allow</code>·<code>warn</code>·<code>block</code> exact match, 차단 여부 Precision·Recall·F1 |
+
+현재 fixture 기준 exact-match accuracy와 blocking F1은 모두 <code>1.0</code>입니다. 이 값은 일반적인 모델 성능 점수가 아니라, 버전 관리되는 정책 회귀 기준선입니다.
+
+평가 데이터와 확장 계획은 [evals/README.md](evals/README.md)에 정리했습니다.
+
+### Observability: 배포 후 오류와 지연 추적
+
+모든 <code>/api/ai/*</code> 라우트에 공용 텔레메트리 래퍼를 적용했습니다.
+
+- 한 줄 JSON으로 기능명, HTTP 상태, 결과, 처리 시간을 기록
+- 응답의 <code>x-ai-trace-id</code>로 장애 제보와 서버 로그를 연결
+- <code>Server-Timing</code>으로 브라우저에서 AI API 지연 시간을 확인
+- 질문·프롬프트·게시글·URL·사용자 식별자는 기록하지 않음
+- Agent, RAG, 도구 호출, 경기 전망을 같은 이벤트 스키마로 비교
+
+이벤트 스키마와 운영 지표는 [AI Runtime Observability](docs/ai-observability.md)에 정리했습니다.
+
+## 품질 검증
+
+### CI 자동 검증
+
+[Quality CI](https://github.com/kominsuk1064/jungle-ai-board/actions/workflows/ci.yml)는 push와 pull request마다 다음 순서로 실행됩니다.
+
+~~~text
+npm audit
+→ ESLint
+→ TypeScript typecheck
+→ Vitest
+→ offline AI eval
+→ Next.js production build
+~~~
+
+| 검사 | 현재 기준 |
 | --- | --- |
-| `/` | 게시글 목록, 팀/태그 필터, 오늘의 경기, 인기글, 야구 도우미 |
-| `/posts/new` | 게시글 작성, 태그 선택, 유사 글 확인, 리뷰 초안 생성 |
-| `/posts/[postId]` | 게시글 상세, 댓글, 추천/비추천, 유사 글 추천 |
-| `/posts/[postId]/edit` | 게시글 수정 |
-| `/games/[gameId]` | 경기방, 박스스코어, 타자/투수 기록, 라인업, 문자중계, 관련 글 요약, 공식 기록 브리핑 |
-| `/news` | KBO 뉴스 목록과 URL 브리핑 |
-| `/records` | 순위/기록실, KBO 팀 순위와 선수 기록 조회 |
-| `/login` | 로그인 |
-| `/signup` | 회원가입 |
+| Dependency audit | <code>npm audit --audit-level=high</code>, 0 vulnerabilities |
+| Unit·route integration tests | 5개 파일, 25개 테스트 통과 |
+| Offline AI eval | 18개 fixture 통과 |
+| Lint·typecheck·build | 모두 통과 |
+| Runtime telemetry coverage | AI API 10개 적용 |
 
-## 10. 주요 API
+### 수동 기능 검증
 
-| API | 역할 |
+| 영역 | 확인 항목 |
 | --- | --- |
-| `/api/auth/signup` | 회원가입 |
-| `/api/auth/login` | 로그인 |
-| `/api/auth/logout` | 로그아웃 |
-| `/api/auth/me` | 현재 사용자 조회 |
-| `/api/posts` | 게시글 목록 조회 / 작성 |
-| `/api/posts/[postId]` | 게시글 상세 조회 / 수정 / 삭제 |
-| `/api/posts/[postId]/comments` | 댓글 목록 조회 / 작성 |
-| `/api/comments/[commentId]` | 댓글 수정 / 삭제 |
-| `/api/posts/[postId]/views` | 조회수 증가 |
-| `/api/posts/[postId]/votes` | 추천 / 비추천 |
-| `/api/tags` | 태그 목록 조회 |
-| `/api/kbo/news` | KBO 뉴스 조회 |
-| `/api/kbo/standings` | KBO 순위 조회 |
-| `/api/kbo/player-records` | 선수 기록 조회 |
-| `/api/kbo/boxscore` | 경기 박스스코어와 타자/투수 기록 조회 |
-| `/api/kbo/lineup` | 경기 라인업 조회 |
-| `/api/kbo/relay` | 네이버 문자중계 조회 |
-| `/api/mcp/baseball-briefing` | MCP JSON-RPC 서버 |
-| `/api/ai/mcp/briefing` | 뉴스/URL 브리핑 |
-| `/api/ai/mcp/kbo-games` | KBO 경기 일정/결과 조회 |
-| `/api/ai/mcp/kbo-game-record` | KBO 공식 기록 브리핑 |
-| `/api/ai/rag/similar-posts` | 유사 게시글 추천 |
-| `/api/ai/rag/draft-similar-posts` | 글쓰기 중복 글 확인 |
-| `/api/ai/rag/related-post-summary` | 관련 글 묶음 요약 |
-| `/api/ai/agent/review-assistant` | 경기 리뷰 작성 도우미 |
-| `/api/ai/agent/moderation` | 모더레이션 |
-| `/api/ai/agent/board-assistant` | 야구 게시판 도우미 |
-| `/api/ai/prediction/game` | 경기 승부 예측 |
+| 인증·게시판 | 회원가입, 로그인, 게시글·댓글 CRUD, 태그, 검색, 페이지네이션, 추천·비추천 |
+| KBO 데이터 | 일정·결과, 순위, 선수 기록, 박스스코어, 라인업, 문자중계 |
+| RAG | 유사 글 검색, 중복 위험 안내, 관련 글 요약 |
+| Agent·도구 | 리뷰 초안, 모더레이션, 게시판 도우미, JSON-RPC tool 호출 |
+| 배포 | 홈 화면 응답, Vercel 웹, 모바일 앱형 화면, Android APK |
 
-## 11. 실행 방법
+## 기술 스택
+
+| 영역 | 기술 | 선택 이유 |
+| --- | --- | --- |
+| Frontend | React 19, Next.js 16 App Router, Tailwind CSS | 화면과 서버 컴포넌트, API를 하나의 TypeScript 프로젝트에서 관리 |
+| Backend | Next.js Route Handlers | UI와 가까운 API를 빠르게 설계하고 공통 인증·관측성 적용 |
+| Database | PostgreSQL, Prisma | 관계형 커뮤니티 데이터와 타입 안전한 데이터 접근 |
+| Vector search | pgvector, LangChain.js | 별도 벡터 DB 없이 게시글 데이터와 임베딩을 함께 관리 |
+| AI | OpenAI Chat·Embedding API | 요약, 초안, 도구 선택, 벡터 임베딩 구현 |
+| Quality | Vitest, JSONL eval dataset | 빠른 단위·통합 테스트와 재현 가능한 정책 회귀 검사 |
+| Operations | GitHub Actions, structured JSON telemetry | 변경 전 품질 검증과 배포 후 오류·지연 추적 |
+| Deployment | Vercel, Supabase | 웹 애플리케이션과 PostgreSQL + pgvector 운영 |
+| Mobile | PWA UI, Android WebView | 동일한 웹 기능을 모바일 앱형 경험과 APK로 확장 |
+
+## 로컬 실행
 
 ### 요구 사항
 
-- Node.js
-- PostgreSQL
-- PostgreSQL pgvector 확장
+- Node.js 22
+- PostgreSQL과 pgvector 확장
 - OpenAI API Key
 
-### 환경 변수
+### 설치
 
-프로젝트 루트에 `.env` 파일을 생성합니다. `.env.example`을 참고하면 됩니다.
+~~~bash
+git clone https://github.com/kominsuk1064/jungle-ai-board.git
+cd jungle-ai-board
+npm ci
+~~~
 
-```env
+프로젝트 루트에 <code>.env</code>를 만들고 <code>.env.example</code>을 참고해 값을 설정합니다.
+
+~~~env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/baseball_ai_board?schema=public"
 AUTH_SECRET="replace-with-at-least-32-characters"
 OPENAI_API_KEY="replace-with-openai-api-key"
@@ -395,148 +272,79 @@ OPENAI_EMBEDDING_MODEL="text-embedding-3-small"
 OPENAI_EMBEDDING_DIMENSIONS="1536"
 OPENAI_CHAT_MODEL="gpt-4o-mini"
 MCP_SHARED_SECRET="replace-with-optional-mcp-secret"
-```
+~~~
 
-### 로컬 실행
+데이터베이스를 준비하고 개발 서버를 실행합니다.
 
-PowerShell에서는 `npm` 대신 `npm.cmd`를 사용합니다.
+~~~bash
+npm run db:migrate
+npm run seed:demo-posts
+npm run dev
+~~~
 
-```bash
-npm.cmd install
-npm.cmd run db:migrate
-npm.cmd run dev
-```
+개발 서버는 <http://localhost:3000>에서 열립니다. Windows PowerShell에서 실행 정책 문제가 있으면 <code>npm</code>과 <code>npx</code> 대신 <code>npm.cmd</code>과 <code>npx.cmd</code>을 사용합니다.
 
-개발 서버:
+### 전체 품질 검사
 
-```text
-http://localhost:3000
-```
+~~~bash
+npm audit --audit-level=high
+npm run quality
+npx prisma migrate status
+~~~
 
-### 데모 데이터
+## 데모에서 볼 수 있는 흐름
 
-```bash
-npm.cmd run seed:demo-posts
-```
+1. 메인 화면에서 오늘의 경기와 게시글·인기글 확인
+2. 경기방에서 선발투수, 라인업, 문자중계, 박스스코어 확인
+3. 글쓰기 화면에서 기존 글과의 중복 위험 확인
+4. 경기 메모와 실제 기록을 이용해 리뷰 초안 생성
+5. 게시글 상세에서 유사 글을 찾고 경기방에서 팬 반응 요약
+6. 댓글 작성 시 모더레이션의 경고·차단 흐름 확인
+7. 야구 도우미에게 경기·순위·선수 기록·게시글 질문
+8. 모바일 앱형 화면과 Android APK에서 같은 흐름 확인
 
-### 검증 명령
+<details>
+<summary><strong>대표 API 보기</strong></summary>
 
-```bash
-npm.cmd run lint
-npm.cmd run build
-npx.cmd prisma migrate status
-```
-
-## 12. 배포
-
-웹 배포는 Vercel, 운영 DB는 Supabase PostgreSQL + pgvector, Android 앱 배포 파일은 GitHub Release를 기준으로 준비합니다.
-
-배포 절차는 [docs/deployment.md](docs/deployment.md)에 정리했습니다.
-
-최종 포트폴리오에는 아래 링크를 정리합니다.
-
-```text
-Web Demo: https://jungle-ai-board.vercel.app
-Mobile App: https://jungle-ai-board.vercel.app/mobile-app
-KBO App Improvement Case Study: https://jungle-ai-board.vercel.app/portfolio/kbo-app
-Android APK Release: https://github.com/kominsuk1064/jungle-ai-board/releases/tag/v0.1.0
-```
-
-## 13. 데모
-
-### 메인 페이지 데모 화면
-
-![KBO Talk 메인 페이지 데모 화면](docs/screenshots/baseball-ai-board-demo.png)
-
-### 추천 시연 흐름
-
-1. 메인 화면에서 게시글 목록, 오늘의 경기, 팀/태그 필터, 인기글, 야구 도우미 확인
-2. 순위/기록실 페이지에서 KBO 팀 순위와 선수 기록 조회
-3. 경기방에서 선발 투수, 승리/패전/세이브 투수, 박스스코어, 타자/투수 기록 확인
-4. 경기방에서 라인업, 문자중계, 관련 글 요약과 공식 기록 브리핑 확인
-5. 글쓰기 페이지에서 기존 태그 선택과 유사 글 확인
-6. 경기 리뷰 작성 도우미로 리뷰 초안 생성
-7. 뉴스 페이지에서 기사 확인 후 URL 브리핑 실행
-8. 게시글 상세에서 유사 게시글 추천 확인
-9. 댓글 작성 시 모더레이터 경고/차단 흐름 확인
-10. 야구 게시판 도우미에게 게시글, 순위, 기록실, 경기방 관련 질문 입력
-
-### RAG / MCP / Agent 시연 구분
-
-| 시연 | 분류 |
+| API | 역할 |
 | --- | --- |
-| 게시글 상세의 유사 글 추천 | RAG |
-| 글쓰기 페이지의 유사 글 확인 | RAG |
-| 경기방 관련 글 요약 | RAG |
-| 뉴스 URL 브리핑 | MCP |
-| KBO 경기 일정/결과 조회 | MCP |
-| KBO 공식 기록 브리핑 | MCP |
-| 경기 리뷰 초안 생성 | Agent |
-| 게시글/댓글 모더레이션 | Agent |
-| 야구 게시판 도우미 | Agent |
-| 경기 승부 예측 | Agent |
+| <code>/api/posts</code> | 게시글 목록 조회·작성 |
+| <code>/api/kbo/standings</code> | KBO 팀 순위 |
+| <code>/api/kbo/player-records</code> | 선수 기록 |
+| <code>/api/kbo/boxscore</code> | 경기 박스스코어와 타자·투수 기록 |
+| <code>/api/mcp/baseball-briefing</code> | JSON-RPC 도구 서버 |
+| <code>/api/ai/rag/similar-posts</code> | 유사 게시글 추천 |
+| <code>/api/ai/rag/draft-similar-posts</code> | 작성 중인 글의 중복 위험 확인 |
+| <code>/api/ai/rag/related-post-summary</code> | 경기·팀 관련 글 묶음 요약 |
+| <code>/api/ai/agent/review-assistant</code> | 경기 리뷰 초안 |
+| <code>/api/ai/agent/moderation</code> | 게시글·댓글 모더레이션 |
+| <code>/api/ai/agent/board-assistant</code> | 야구 게시판 도우미 |
+| <code>/api/ai/prediction/game</code> | 경기 전망 |
 
-## 14. 현재 검증 결과
+</details>
 
-코드 품질 검사와 결정론적 AI 정책 eval은 GitHub Actions에서 pull request와 push마다 실행합니다. 외부 API나 데이터베이스가 없어도 중복 위험 임계값과 모더레이션 정책의 회귀를 검사할 수 있으며, 평가 fixture와 실행 방법은 [`evals/README.md`](evals/README.md)에 정리했습니다.
+## 문서
 
-- `npm.cmd audit --audit-level=high` 통과: 0 vulnerabilities
-- `npm.cmd run lint` 통과
-- `npm.cmd run typecheck` 통과
-- `npm.cmd run test` 통과: 5개 파일, 25개 단위·라우트 통합 테스트
-- `npm.cmd run eval:offline` 통과
-  - 중복 위험 정책 8개 fixture: exact-match accuracy `1.0`, blocking F1 `1.0`
-  - 모더레이션 정책 10개 fixture: exact-match accuracy `1.0`, blocking F1 `1.0`
-- `npm.cmd run build` 통과
-- GitHub Actions 품질 CI 구성: dependency audit → lint → typecheck → unit test → offline eval → production build
-- AI API 10개 기능군에 trace ID·결과 상태·지연 시간 구조화 로깅 적용
-- PostgreSQL / Prisma migration 적용
-- pgvector 기반 `PostEmbedding` 저장 확인
-- 회원가입 / 로그인 확인
-- 게시글 CRUD 확인
-- 댓글 CRUD 확인
-- 태그 필터와 다중 태그 선택 확인
-- 검색과 페이지네이션 확인
-- 추천/비추천 확인
-- KBO 뉴스 조회 확인
-- KBO 순위 조회 확인
-- 선수 기록실 조회 확인
-- KBO 박스스코어와 타자/투수 기록 조회 확인
-- KBO 경기 정보 조회 확인
-- 라인업 조회 확인
-- 문자중계 이닝별 조회 로직 확인
-- RAG 유사 글 추천 확인
-- RAG 관련 글 요약 확인
-- MCP JSON-RPC tool 호출 구조 확인
-- Agent 리뷰 초안 생성 확인
-- Agent 모더레이션 allow/warn/block 확인
-- 홈 화면 라우트 `200` 응답 확인
+| 문서 | 내용 |
+| --- | --- |
+| [AI Runtime Observability](docs/ai-observability.md) | 이벤트 스키마, 개인정보 보호 원칙, 운영 지표 |
+| [AI Evals](evals/README.md) | 평가 데이터셋, 실행 방법, live retrieval eval 계획 |
+| [Deployment](docs/deployment.md) | Vercel·Supabase 배포 절차 |
+| [Service Portfolio](docs/portfolio.md) | 서비스 문제 정의와 사용자 흐름 |
+| [Release Notes](docs/release-notes-v0.1.0.md) | Android v0.1.0 릴리스 정보 |
 
-## 15. 회고, 한계점, 개선 아이디어
+## 한계와 다음 단계
 
-### 회고
+- 현재 offline eval은 결정론적 정책 회귀 기준선이며, 실제 embedding·pgvector를 사용하는 live retrieval eval은 아직 분리되어 있습니다.
+- 구조화 로그는 배포 플랫폼에서 확인할 수 있지만 장기 저장, 대시보드, OpenTelemetry trace export는 연결하지 않았습니다.
+- KBO와 네이버 스포츠 데이터는 외부 페이지 구조 변경의 영향을 받을 수 있습니다.
+- RAG 품질은 게시글의 양과 내용 품질에 영향을 받습니다.
+- 경기 전망은 전용 예측 모델이 아닌 경기 정보 기반 LLM 브리핑이므로 참고용입니다.
 
-처음에는 게시판에 AI 기능을 붙이는 데 초점을 두었지만, 구현을 진행하면서 AI 기능이 화면에서 너무 튀면 실제 커뮤니티처럼 느껴지지 않는다는 점을 알게 됐습니다. 그래서 최종적으로는 게시판, 경기방, 뉴스, 기록실 같은 야구 커뮤니티 흐름을 먼저 만들고, 필요한 순간에 RAG, MCP, Agent가 보조하는 구조로 바꾸었습니다.
+다음 단계는 실제 검색 결과에 대한 Recall@K·MRR 이력 관리, AI 실행 로그의 SLO 대시보드 연결, Agent 상태 관리 고도화입니다.
 
-이번 프로젝트를 통해 프론트엔드 화면, 백엔드 API, DB 모델, 인증, 외부 데이터 연동, LLM 호출, 벡터 검색, Agent 흐름이 실제 서비스 안에서 어떻게 연결되는지 경험할 수 있었습니다.
+## 회고
 
-### 한계점
+처음에는 게시판에 AI 기능을 추가하는 데 초점을 두었지만, 구현하면서 중요한 것은 AI 기능의 개수가 아니라 <strong>사용자가 필요로 하는 순간에 자연스럽게 도움을 주는가</strong>라는 점을 배웠습니다. 그래서 게시판·경기방·뉴스·기록실의 제품 흐름을 먼저 만들고, RAG와 Agent가 그 흐름을 보조하도록 구조를 바꾸었습니다.
 
-- OpenAI API 사용량에 따라 비용이 발생합니다.
-- RAG 품질은 게시글 수와 게시글 내용 품질에 영향을 받습니다.
-- KBO 공식 API가 공개 문서 형태로 제공되는 구조는 아니기 때문에, KBO 페이지 구조가 바뀌면 데이터 파싱 로직 수정이 필요할 수 있습니다.
-- 네이버 스포츠 문자중계, 라인업, 기록 데이터 역시 외부 페이지 구조 변경에 영향을 받을 수 있습니다.
-- 승부 예측은 실제 예측 모델이 아니라 경기 정보, 선발 투수, 순위, 라인업을 바탕으로 한 LLM 브리핑이므로 참고용입니다.
-- 구조화 로그 기준선은 있지만 장기 저장, 대시보드, 분산 trace export는 아직 연결하지 않았습니다.
-
-### 개선 아이디어
-
-- 사용자별 관심 팀 기반 개인화 추천
-- 경기 리뷰 템플릿 자동 생성 고도화
-- 댓글 반응과 추천/비추천 기반 인기글 랭킹 개선
-- 관리자용 모더레이션 대시보드
-- AI 실행 로그 장기 저장과 SLO·알림 대시보드 연결
-- LangGraph 기반 Agent 상태 관리 고도화
-- 실제 embedding·pgvector를 사용하는 live retrieval eval과 지표 이력 관리
-- 모바일 UI 개선
-- 배포 환경에서 주기적 데이터 캐싱과 장애 대응 강화
+이번 품질 개선에서는 “동작한다”는 설명만으로는 부족하다는 점에 집중했습니다. 평가 데이터, 자동 테스트, CI, 개인정보를 남기지 않는 텔레메트리를 함께 구축하며 AI 애플리케이션을 반복해서 검증하고 운영할 수 있는 형태로 발전시켰습니다.
