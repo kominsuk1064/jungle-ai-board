@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { DEFAULT_RAG_LIMIT, MAX_RAG_LIMIT } from "@/lib/ai/config";
 import { summarizeRelatedPostsByTags } from "@/lib/ai/rag";
+import { withAiTelemetry } from "@/lib/ai/telemetry";
 
 export const runtime = "nodejs";
 
@@ -34,7 +35,7 @@ function getLimit(value: unknown): number {
   return Math.min(limit, MAX_RAG_LIMIT);
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   let body: unknown;
 
   try {
@@ -80,4 +81,12 @@ export async function POST(request: Request) {
     summary: result.summary,
     sources: result.sources,
   });
+}
+
+export function POST(request: Request): Promise<Response> {
+  return withAiTelemetry(
+    request,
+    "rag.related-post-summary",
+    () => handlePost(request),
+  );
 }

@@ -32,6 +32,7 @@ AI 기능은 다음 세 가지 축으로 구성했습니다.
 | MCP | Node.js 기반 JSON-RPC 구조 |
 | Agent | Function Calling 기반 직접 구현 |
 | Auth | JWT + HttpOnly Cookie |
+| Quality | Vitest, JSONL eval dataset, structured JSON telemetry, GitHub Actions |
 
 ### 선택 이유
 
@@ -85,6 +86,8 @@ AI 기능은 다음 세 가지 축으로 구성했습니다.
 - Agent 기반 자율 운영 모더레이터
 - Agent 기반 야구 게시판 도우미 챗봇
 - Agent 기반 경기 승부 예측
+- 중복 위험·모더레이션 정책 오프라인 eval과 CI 회귀 차단
+- 전체 AI API의 trace ID·지연 시간·결과 상태 구조화 로깅
 
 ## 4. 전체 아키텍처
 
@@ -100,6 +103,8 @@ flowchart LR
     MCP --> KBO["KBO 공식 경기/기록 데이터"]
     MCP --> News["뉴스 RSS / 외부 URL"]
     API --> Naver["네이버 스포츠 문자중계/기록 데이터"]
+    API --> Telemetry["AI Runtime Telemetry"]
+    Telemetry --> Logs["Structured Logs"]
     API --> Agent["Agent Logic"]
     Agent --> DB
     Agent --> OpenAI
@@ -295,6 +300,18 @@ Agent는 단순히 LLM을 한 번 호출하는 기능이 아니라, 목적에 �
 - 도구 실패 시 fallback 응답 제공
 - 모더레이션은 규칙 기반 판정을 우선하고 LLM은 보조 판단으로 사용
 
+### AI 런타임 관측성
+
+모든 `/api/ai/*` 라우트는 공용 텔레메트리 래퍼를 사용합니다.
+
+- 기능명, HTTP 결과, 처리 시간을 한 줄 JSON 이벤트로 기록
+- 응답의 `x-ai-trace-id`로 사용자 장애 제보와 서버 로그 연결
+- `Server-Timing` 헤더로 브라우저에서 AI API 지연 시간 확인
+- 질문·프롬프트·게시글·URL·사용자 식별자는 로그에서 제외
+- Agent, RAG, MCP, 경기 예측을 같은 스키마로 비교 가능
+
+이벤트 스키마와 운영 지표는 [`docs/ai-observability.md`](docs/ai-observability.md)에 정리했습니다.
+
 ### 주요 파일
 
 ```text
@@ -303,6 +320,7 @@ src/lib/ai/moderation-agent.ts
 src/lib/ai/moderation-rules.ts
 src/lib/ai/board-assistant-agent.ts
 src/lib/ai/game-prediction.ts
+src/lib/ai/telemetry.ts
 src/app/api/ai/agent/review-assistant/route.ts
 src/app/api/ai/agent/moderation/route.ts
 src/app/api/ai/agent/board-assistant/route.ts
@@ -460,10 +478,18 @@ Android APK Release: https://github.com/kominsuk1064/jungle-ai-board/releases/ta
 
 ## 14. 현재 검증 결과
 
-현재 로컬 환경에서 다음 항목을 확인했습니다.
+코드 품질 검사와 결정론적 AI 정책 eval은 GitHub Actions에서 pull request와 push마다 실행합니다. 외부 API나 데이터베이스가 없어도 중복 위험 임계값과 모더레이션 정책의 회귀를 검사할 수 있으며, 평가 fixture와 실행 방법은 [`evals/README.md`](evals/README.md)에 정리했습니다.
 
+- `npm.cmd audit --audit-level=high` 통과: 0 vulnerabilities
 - `npm.cmd run lint` 통과
+- `npm.cmd run typecheck` 통과
+- `npm.cmd run test` 통과: 5개 파일, 25개 단위·라우트 통합 테스트
+- `npm.cmd run eval:offline` 통과
+  - 중복 위험 정책 8개 fixture: exact-match accuracy `1.0`, blocking F1 `1.0`
+  - 모더레이션 정책 10개 fixture: exact-match accuracy `1.0`, blocking F1 `1.0`
 - `npm.cmd run build` 통과
+- GitHub Actions 품질 CI 구성: dependency audit → lint → typecheck → unit test → offline eval → production build
+- AI API 10개 기능군에 trace ID·결과 상태·지연 시간 구조화 로깅 적용
 - PostgreSQL / Prisma migration 적용
 - pgvector 기반 `PostEmbedding` 저장 확인
 - 회원가입 / 로그인 확인
@@ -501,7 +527,7 @@ Android APK Release: https://github.com/kominsuk1064/jungle-ai-board/releases/ta
 - KBO 공식 API가 공개 문서 형태로 제공되는 구조는 아니기 때문에, KBO 페이지 구조가 바뀌면 데이터 파싱 로직 수정이 필요할 수 있습니다.
 - 네이버 스포츠 문자중계, 라인업, 기록 데이터 역시 외부 페이지 구조 변경에 영향을 받을 수 있습니다.
 - 승부 예측은 실제 예측 모델이 아니라 경기 정보, 선발 투수, 순위, 라인업을 바탕으로 한 LLM 브리핑이므로 참고용입니다.
-- Agent는 직접 구현한 간단한 추론 루프라 LangGraph 같은 전문 프레임워크 대비 상태 관리와 관측성이 제한적입니다.
+- 구조화 로그 기준선은 있지만 장기 저장, 대시보드, 분산 trace export는 아직 연결하지 않았습니다.
 
 ### 개선 아이디어
 
@@ -509,8 +535,8 @@ Android APK Release: https://github.com/kominsuk1064/jungle-ai-board/releases/ta
 - 경기 리뷰 템플릿 자동 생성 고도화
 - 댓글 반응과 추천/비추천 기반 인기글 랭킹 개선
 - 관리자용 모더레이션 대시보드
-- Agent 실행 로그 저장
+- AI 실행 로그 장기 저장과 SLO·알림 대시보드 연결
 - LangGraph 기반 Agent 상태 관리 고도화
-- RAG 검색 결과 평가 지표 추가
+- 실제 embedding·pgvector를 사용하는 live retrieval eval과 지표 이력 관리
 - 모바일 UI 개선
 - 배포 환경에서 주기적 데이터 캐싱과 장애 대응 강화

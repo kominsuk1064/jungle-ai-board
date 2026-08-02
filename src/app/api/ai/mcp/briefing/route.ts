@@ -4,6 +4,7 @@ import {
   createMcpBriefing,
   type BriefingMode,
 } from "@/lib/ai/mcp-briefing";
+import { withAiTelemetry } from "@/lib/ai/telemetry";
 
 export const runtime = "nodejs";
 
@@ -48,7 +49,7 @@ function parseInput(body: unknown):
   };
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   let body: unknown;
 
   try {
@@ -87,4 +88,10 @@ export async function POST(request: Request) {
       { status: 502 },
     );
   }
+}
+
+export function POST(request: Request): Promise<Response> {
+  return withAiTelemetry(request, "mcp.briefing", () =>
+    handlePost(request),
+  );
 }

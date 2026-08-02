@@ -4,6 +4,7 @@ import {
   type BoardAssistantMessage,
   runBoardAssistantAgent,
 } from "@/lib/ai/board-assistant-agent";
+import { withAiTelemetry } from "@/lib/ai/telemetry";
 
 export const runtime = "nodejs";
 
@@ -26,7 +27,7 @@ function getMessages(value: unknown): BoardAssistantMessage[] {
     .slice(-6);
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   let body: unknown;
 
   try {
@@ -75,4 +76,12 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+}
+
+export function POST(request: Request): Promise<Response> {
+  return withAiTelemetry(
+    request,
+    "agent.board-assistant",
+    () => handlePost(request),
+  );
 }

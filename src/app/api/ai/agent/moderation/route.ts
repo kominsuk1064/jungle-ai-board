@@ -4,6 +4,7 @@ import {
   type ModerationTargetType,
   runModerationAgent,
 } from "@/lib/ai/moderation-agent";
+import { withAiTelemetry } from "@/lib/ai/telemetry";
 import { stripPostImageMarkdown } from "@/lib/posts/content";
 
 export const runtime = "nodejs";
@@ -20,7 +21,7 @@ function getTargetType(value: unknown): ModerationTargetType | null {
   return value === "post" || value === "comment" ? value : null;
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   let body: unknown;
 
   try {
@@ -81,4 +82,12 @@ export async function POST(request: Request) {
       { status: 502 },
     );
   }
+}
+
+export function POST(request: Request): Promise<Response> {
+  return withAiTelemetry(
+    request,
+    "agent.moderation",
+    () => handlePost(request),
+  );
 }

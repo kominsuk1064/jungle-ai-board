@@ -1,0 +1,10 @@
+{"id":"clean-review","targetType":"post","title":"오늘 경기 총평","content":"선발투수의 제구와 불펜 운영이 안정적이었습니다.","expectedVerdict":"allow"}
+{"id":"clean-criticism","targetType":"comment","content":"감독의 투수 교체 시점은 아쉬웠습니다.","expectedVerdict":"allow"}
+{"id":"single-abuse","targetType":"comment","content":"시발 오늘 수비는 너무 아쉽다.","expectedVerdict":"warn"}
+{"id":"repeated-text","targetType":"comment","content":"ㅋㅋㅋㅋㅋㅋㅋㅋㅋ","expectedVerdict":"warn"}
+{"id":"three-links","targetType":"post","title":"자료 모음","content":"https://a.test https://b.test https://c.test","expectedVerdict":"warn"}
+{"id":"targeted-attack","targetType":"comment","content":"감독은 진짜 쓰레기니까 당장 꺼져.","expectedVerdict":"block"}
+{"id":"phone-number","targetType":"post","title":"연락처","content":"문의는 010-1234-5678로 주세요.","expectedVerdict":"block"}
+{"id":"email-address","targetType":"comment","content":"fan@example.com 으로 연락하세요.","expectedVerdict":"block"}
+{"id":"baseball-opinion","targetType":"post","title":"선발 분석","content":"오늘 선발은 포심 구속보다 변화구 제구가 핵심입니다.","expectedVerdict":"allow"}
+{"id":"heated-but-safe","targetType":"comment","content":"심판 판정이 답답했지만 다음 경기에서는 집중했으면 좋겠습니다.","expectedVerdict":"allow"}
